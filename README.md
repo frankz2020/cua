@@ -1,161 +1,132 @@
-<div align="center">
-  <a href="https://cua.ai" target="_blank" rel="noopener noreferrer">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" alt="Cua logo" width="150" srcset="img/logo_white.png">
-      <source media="(prefers-color-scheme: light)" alt="Cua logo" width="150" srcset="img/logo_black.png">
-      <img alt="Cua logo" width="500" src="img/logo_black.png">
-    </picture>
-  </a>
+# WeChat Removal Tool
 
-  <p align="center">Build, benchmark, and deploy agents that use computers</p>
+An AI-powered agent that automates the detection and removal of spam/scam users from WeChat groups. Built on the [CUA (Computer Use Agents)](https://github.com/trycua/cua) platform and runs inside a Windows Sandbox for isolation.
 
-  <p align="center">
-    <a href="https://cua.ai" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/cua.ai-0ea5e9" alt="cua.ai"></a>
-    <a href="https://discord.com/invite/cua-ai" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Discord-Join%20Server-10b981?logo=discord&logoColor=white" alt="Discord"></a>
-    <a href="https://x.com/trycua" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/twitter/follow/trycua?style=social" alt="Twitter"></a>
-    <a href="https://cua.ai/docs" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Docs-0ea5e9.svg" alt="Documentation"></a>
-    <br>
-<a href="https://trendshift.io/repositories/13685" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13685" alt="trycua%2Fcua | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-  </p>
+## Features
 
-</div>
+- Automated spam/scam user detection in WeChat group chats
+- Human-in-the-loop confirmation before removal
+- Runs in isolated Windows Sandbox environment
+- Supports multiple LLM providers via OpenRouter
 
-**Cua** is an open-source platform for building, benchmarking, and deploying agents that can use any computer, with isolated, self-hostable sandboxes (Docker, QEMU, Apple Vz).
+## Prerequisites
 
-<div align="center">
-  <video src="https://github.com/user-attachments/assets/c619b4ea-bb8e-4382-860e-f3757e36af20" width="600" controls></video>
-</div>
+- Windows 10/11 Pro (with Windows Sandbox enabled)
+- Python 3.12+
+- OpenRouter API key (or other supported LLM provider)
 
-## Choose Your Path
+## Quick Start
 
-<table width="100%">
-  <tr>
-    <th width="180"></th>
-    <th align="left">If you want to...</th>
-    <th width="120">Check out</th>
-  </tr>
-  <tr>
-    <td><a href="#cua---agentic-ui-automation--code-execution"><img src="img/cua-architecture.png" width="180"></a></td>
-    <td>Build AI agents that interact with any desktop, or run isolated code execution environments for AI coding assistants</td>
-    <td><a href="#cua---agentic-ui-automation--code-execution"><strong>Cua</strong></a></td>
-  </tr>
-  <tr>
-    <td><a href="#cua-bench---benchmarks--rl-environments"><img src="img/cua-bench-architecture.png" width="180"></a></td>
-    <td>Benchmark computer-use models on standardized tasks, or train agents with reinforcement learning</td>
-    <td><a href="#cua-bench---benchmarks--rl-environments"><strong>Cua-Bench</strong></a></td>
-  </tr>
-  <tr>
-    <td><a href="#lume---macos-virtualization"><img src="img/lume-architecture.png" width="180"></a></td>
-    <td>Run macOS and Linux VMs at near-native speed on Apple Silicon for CI/CD, testing, or agent workloads</td>
-    <td><a href="#lume---macos-virtualization"><strong>Lume</strong></a></td>
-  </tr>
-</table>
+1. **Enable Windows Sandbox** (if not already enabled):
+   ```powershell
+   Enable-WindowsOptionalFeature -FeatureName "Containers-DisposableClientVM" -All -Online
+   ```
 
----
+2. **Set your API key**:
+   ```powershell
+   $env:OPENROUTER_API_KEY = "sk-or-v1-..."
+   ```
 
-## Cua - Agentic UI Automation & Code Execution
+3. **Install dependencies**:
+   ```bash
+   pip install httpx aiohttp pydantic litellm pywinsandbox pillow rich
+   ```
 
-Build agents that see screens, click buttons, and complete tasks autonomously. Run isolated code execution environments for AI coding assistants like Claude Code, Codex CLI, or OpenCode.
+4. **Run the workflow**:
+   ```bash
+   python -m workflow.run_wechat_removal
+   ```
 
-<img src="img/cua-architecture.png" alt="Cua Architecture" width="100%">
+5. **Follow the prompts**:
+   - Wait for the sandbox to start
+   - Install WeChat from the shared folder (`Desktop/cua/WeChatWin_4.1.6.exe`)
+   - Log in and wait for messages to sync
+   - Type `ready` to start the automated workflow
 
-```python
-# Requires Python 3.12 or 3.13
-from computer import Computer
-from agent import ComputerAgent
+## Project Structure
 
-computer = Computer(os_type="linux", provider_type="cloud")
-agent = ComputerAgent(model="anthropic/claude-sonnet-4-5-20250929", computer=computer)
-
-async for result in agent.run([{"role": "user", "content": "Open Firefox and search for Cua"}]):
-    print(result)
+```
+.
+├── config/                  # Configuration files
+│   ├── computer_windows.yaml    # Windows Sandbox settings
+│   └── model.yaml               # AI model settings
+├── runtime/                 # Session lifecycle managers
+│   ├── computer_session.py      # Computer/sandbox setup
+│   └── model_session.py         # Agent configuration
+├── modules/                 # Workflow components
+│   ├── task_types.py            # Data classes
+│   ├── group_classifier.py      # Chat classification
+│   ├── unread_scanner.py        # Unread filter
+│   ├── message_reader.py        # Message reading prompts
+│   ├── suspicious_detector.py   # Suspect extraction
+│   ├── removal_precheck.py      # Removal planning
+│   ├── human_confirmation.py    # User confirmation
+│   └── removal_executor.py      # Removal execution
+├── workflow/                # Main orchestration
+│   └── run_wechat_removal.py    # Entry point
+├── artifacts/               # Output directory
+│   ├── captures/                # Screenshots
+│   └── logs/                    # Reports
+├── vendor/                  # Vendored CUA packages
+│   ├── agent/                   # cua-agent
+│   ├── computer/                # cua-computer
+│   ├── computer-server/         # cua-computer-server
+│   └── core/                    # cua-core
+└── docs/                    # Documentation
+    └── ARCHITECTURE.md          # Architecture details
 ```
 
-**[Get Started](https://cua.ai/docs/cua/guide/get-started/set-up-sandbox)** | **[Examples](https://cua.ai/docs/cua/guide/examples)** | **[API Reference](https://cua.ai/docs/cua/reference/agent-sdk)**
+## Configuration
 
----
+### `config/computer_windows.yaml`
 
-## Cua-Bench - Benchmarks & RL Environments
-
-Evaluate computer-use agents on OSWorld, ScreenSpot, Windows Arena, and custom tasks. Export trajectories for training.
-
-<img src="img/cua-bench-architecture.png" alt="Cua-Bench Architecture" width="100%">
-
-```bash
-# Install and create base image
-cd cua-bench
-uv tool install -e . && cb image create linux-docker
-
-# Run benchmark with agent
-cb run dataset datasets/cua-bench-basic --agent cua-agent --max-parallel 4
+```yaml
+provider_type: winsandbox
+os_type: windows
+display: "1280x720"
+memory: "8GB"
+cpu: "4"
+timeout: 180
 ```
 
-**[Get Started](https://cua.ai/docs/cuabench/guide/getting-started/first-steps)** | **[Registry](https://cuabench.ai/registry)** | **[CLI Reference](https://cua.ai/docs/cuabench/reference/cli-reference)**
+### `config/model.yaml`
 
----
-
-## Lume - macOS Virtualization
-
-Create and manage macOS/Linux VMs with near-native performance on Apple Silicon using Apple's Virtualization.Framework.
-
-<img src="img/lume-architecture.png" alt="Lume Architecture" width="100%">
-
-```bash
-# Install Lume
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/lume/scripts/install.sh)"
-
-# Pull & start a macOS VM
-lume run macos-sequoia-vanilla:latest
+```yaml
+model: openrouter/anthropic/claude-sonnet-4
+max_trajectory_budget: 5.0
+instructions: |
+  You are an assistant for managing WeChat group violations...
 ```
 
-**[Get Started](https://cua.ai/docs/lume)** | **[FAQ](https://cua.ai/docs/lume/guide/getting-started/faq)** | **[CLI Reference](https://cua.ai/docs/lume/reference/cli-reference)**
+## Output
 
----
+Results are saved to `artifacts/logs/report.json`:
 
-## Packages
+```json
+{
+  "timestamp": "2026-01-19T12:00:00.000000",
+  "threads": [...],
+  "suspects": [...],
+  "removal_confirmed": true,
+  "note": "Successfully removed 1 suspect"
+}
+```
 
-| Package                                                                  | Description                                                |
-| ------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| [cua-agent](https://cua.ai/docs/cua/reference/agent-sdk)                 | AI agent framework for computer-use tasks                  |
-| [cua-computer](https://cua.ai/docs/cua/reference/computer-sdk)           | SDK for controlling desktop environments                   |
-| [cua-computer-server](https://cua.ai/docs/cua/reference/computer-server) | Driver for UI interactions and code execution in sandboxes |
-| [cua-bench](https://cua.ai/docs/cuabench)                                | Benchmarks and RL environments for computer-use            |
-| [lume](https://cua.ai/docs/lume)                                         | macOS/Linux VM management on Apple Silicon                 |
-| [lumier](https://cua.ai/docs/lume/reference/lumier)                      | Docker-compatible interface for Lume VMs                   |
+## Documentation
 
-## Resources
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture documentation.
 
-- [Documentation](https://cua.ai/docs) — Guides, examples, and API reference
-- [Blog](https://www.cua.ai/blog) — Tutorials, updates, and research
-- [Discord](https://discord.com/invite/mVnXXpdE85) — Community support and discussions
-- [GitHub Issues](https://github.com/trycua/cua/issues) — Bug reports and feature requests
+## Upstream Reference
 
-## Contributing
+This project is built on the [CUA (Computer Use Agents)](https://github.com/trycua/cua) platform. The `vendor/` directory contains vendored copies of the following CUA packages:
 
-We welcome contributions! See our [Contributing Guidelines](CONTRIBUTING.md) for details.
+- **cua-agent**: AI agent framework for computer-use tasks
+- **cua-computer**: SDK for controlling desktop environments  
+- **cua-computer-server**: HTTP API for UI interactions inside sandboxes
+- **cua-core**: Shared utilities and telemetry
+
+For the original source code and documentation, visit the [CUA repository](https://github.com/trycua/cua).
 
 ## License
 
-MIT License — see [LICENSE](LICENSE.md) for details.
-
-Third-party components have their own licenses:
-
-- [Kasm](libs/kasm/LICENSE) (MIT)
-- [OmniParser](https://github.com/microsoft/OmniParser/blob/master/LICENSE) (CC-BY-4.0)
-- Optional `cua-agent[omni]` includes ultralytics (AGPL-3.0)
-
-## Trademarks
-
-Apple, macOS, Ubuntu, Canonical, and Microsoft are trademarks of their respective owners. This project is not affiliated with or endorsed by these companies.
-
----
-
-<div align="center">
-
-[![Stargazers over time](https://starchart.cc/trycua/cua.svg?variant=adaptive)](https://starchart.cc/trycua/cua)
-
-Thank you to all our [GitHub Sponsors](https://github.com/sponsors/trycua)!
-
-<img width="300" alt="coderabbit-cli" src="https://github.com/user-attachments/assets/23a98e38-7897-4043-8ef7-eb990520dccc" />
-
-</div>
+MIT License

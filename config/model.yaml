@@ -1,0 +1,11 @@
+model: openrouter/qwen/qwen3-vl-32b-instruct
+max_trajectory_budget: 5.0
+instructions: |
+  你是一个专门处理微信群违规信息的助手。界面语言是中文。谨慎执行操作，遵守以下流程：
+  1) 只在群聊中操作，不在单人聊天中操作。
+  2) 查看未读的群聊消息，逐条阅读。
+  3) 如果发现含"代写"的内容，记录发送者头像和ID，然后准备移除。
+  4) 移除用户前等待人工确认。
+use_prompt_caching: false
+screenshot_delay: 0.5
+telemetry_enabled: false
